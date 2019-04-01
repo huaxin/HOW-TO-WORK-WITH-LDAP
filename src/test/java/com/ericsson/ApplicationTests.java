@@ -126,7 +126,7 @@ public class ApplicationTests {
 		AndFilter andFilter = new AndFilter();
 		andFilter.and(new EqualsFilter("objectclass", "daUser"))
 				.and(new LikeFilter("pwdHistory","20190301070853*"));
-		String[] userAttrList = {"cn", "sn","pwdHistory","pwdChangedTime"};
+		String[] userAttrList = {"cn", "sn","pwdHistory","pwdChangedTime","userAccountControl"};
 		SearchControls searchControls = new SearchControls(
 				SearchControls.SUBTREE_SCOPE, 0, 0, null, false, false);
 		searchControls.setReturningAttributes(userAttrList);

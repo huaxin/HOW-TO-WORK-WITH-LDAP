@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 @Component
 public class UserRepo {
     @Autowired
-    @Qualifier("adLdapTemplate")
+//    @Qualifier("adLdapTemplate")
     private LdapTemplate ldapTemplate;
 
     /**

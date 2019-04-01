@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 @Component
 public class GroupRepo {
     @Autowired
-    @Qualifier("adLdapTemplate")
+//    @Qualifier("adLdapTemplate")
     private LdapTemplate ldapTemplate;
 
     /**

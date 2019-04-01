@@ -1,7 +1,9 @@
 package com.ericsson.ldap.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.ldap.LdapProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.ldap.config.DefaultRenamingStrategyParser;
 import org.springframework.ldap.core.ContextSource;
@@ -10,8 +12,9 @@ import org.springframework.ldap.core.support.LdapContextSource;
 import org.springframework.ldap.transaction.compensating.manager.ContextSourceTransactionManager;
 
 //@Configuration
-//@EnableTransactionManagement
+//@org.springframework.transaction.annotation.EnableTransactionManagement
 public class LdapConfig {
+//    @Autowired
     private LdapProperties properties;
     private Environment environment;
 
@@ -25,7 +28,7 @@ public class LdapConfig {
         return contextSource;
     }
 
-    @Bean
+    @Bean(name = "adLdapTemplate")
     public LdapTemplate ldapTemplate(ContextSource contextSource) {
         return new LdapTemplate(contextSource);
     }

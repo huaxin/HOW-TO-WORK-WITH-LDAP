@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 @Component
 public class OrganizationRepo {
     @Autowired
-    @Qualifier("adLdapTemplate")
+//    @Qualifier("adLdapTemplate")
     private LdapTemplate ldapTemplate;
 
     /**
