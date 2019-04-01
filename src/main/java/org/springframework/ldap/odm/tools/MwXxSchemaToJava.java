@@ -40,7 +40,7 @@ public class MwXxSchemaToJava {
                     "--package", item[0],
                     // 反向生成的输出目录
                     "--outputdir", tempDir };
-            SchemaToJava.main(flags);
+            //SchemaToJava.main(flags);
         }
     }
 }

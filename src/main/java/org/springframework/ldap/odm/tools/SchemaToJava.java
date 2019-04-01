@@ -16,7 +16,7 @@
 
 package org.springframework.ldap.odm.tools;
 
-import freemarker.template.Configuration;
+/*import freemarker.template.Configuration;
 import freemarker.template.DefaultObjectWrapper;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -25,7 +25,7 @@ import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.PosixParser;
+import org.apache.commons.cli.PosixParser;*/
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,12 +51,12 @@ import java.util.regex.Pattern;
 
 /**
  * This tool creates a Java class representation of a set of LDAP object classes for use 
- * with {@link org.springframework.ldap.odm.core.OdmManager}.
+ * with {@link //org.springframework.ldap.odm.core.OdmManager}.
  * <p>
  * The schema of a named list of object classes is read from an LDAP directory and used 
  * to generate a representative Java class.  The Java class is automatically annotated with 
  * {@link org.springframework.ldap.odm.annotations} for use with 
- * {@link org.springframework.ldap.odm.core.OdmManager}.
+ * {@link //org.springframework.ldap.odm.core.OdmManager}.
  * <p>
  * The mapping of LDAP attributes to their Java representations may be configured by supplying the
  * <code>-s</code> flag or the equivalent <code>--syntaxmap</code> flag whose argument is
@@ -142,7 +142,7 @@ public final class SchemaToJava {
         }
     }
 
-    private static final Options options = new Options();
+    /*private static final Options options = new Options();
     static {
         options.addOption(Flag.URL.getShort(), Flag.URL.getLong(), true, "Ldap url (defaults to "+DEFAULT_URL+")");
         options.addOption(Flag.USERNAME.getShort(), Flag.USERNAME.getLong(), true, "DN to bind with (defaults to \"\"");
@@ -153,7 +153,7 @@ public final class SchemaToJava {
         options.addOption(Flag.SYNTAX_MAP.getShort(), Flag.SYNTAX_MAP.getLong(), true, "Syntax map file (optional)");
         options.addOption(Flag.OUTPUT_DIR.getShort(), Flag.OUTPUT_DIR.getLong(), true, "Base output directory (defaults to .)");
         options.addOption(Flag.HELP.getShort(), Flag.HELP.getLong(), false, "Print this help message");
-    }
+    }*/
 
     /**
      * Not to be instantiated.
@@ -259,7 +259,7 @@ public final class SchemaToJava {
     }
     
     // Create the Java
-    private static void createCode(String packageName, 
+    /*private static void createCode(String packageName,
             String className, ObjectSchema schema, Set<SyntaxToJavaClass.ClassInfo> imports, File outputFile) 
         throws IOException, TemplateException {
         
@@ -291,7 +291,7 @@ public final class SchemaToJava {
         template.process(model, out);
         out.flush(); 
         out.close(); 
-    }
+    }*/
     
     // Create the output file for the generated code along with all intervening directories
     private static File makeOutputFile(String outputDir, String packageName, String className)
@@ -341,7 +341,7 @@ public final class SchemaToJava {
         System.exit(1);
     }
     
-    public static void main(String[] argv) {
+    /*public static void main(String[] argv) {
         CommandLineParser parser = new PosixParser();
         CommandLine cmd = null;
 
@@ -461,5 +461,5 @@ public final class SchemaToJava {
         } catch (IOException ioe) {
             error(String.format("Error generatign code - %1$s", ioe.toString()));
         }
-    }
+    }*/
 }

@@ -1,39 +1,30 @@
 package com.ericsson;
 
 import com.alibaba.fastjson.JSON;
-import com.ericsson.domain.*;
-import com.ericsson.ldap.dao.GroupRepo;
-import com.ericsson.ldap.dao.OrganizationRepo;
-import com.ericsson.ldap.dao.UserRepo;
-import com.ericsson.ldap.entity.User;
+//import com.ericsson.domain.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.ldap.LdapProperties;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.ldap.core.AttributesMapper;
-import org.springframework.ldap.core.DirContextOperations;
-import org.springframework.ldap.core.LdapTemplate;
-import org.springframework.ldap.core.NameClassPairMapper;
+import org.springframework.ldap.core.*;
+import org.springframework.ldap.filter.AndFilter;
+import org.springframework.ldap.filter.EqualsFilter;
+import org.springframework.ldap.filter.LikeFilter;
+import org.springframework.ldap.query.ConditionCriteria;
 import org.springframework.ldap.query.LdapQuery;
+import org.springframework.ldap.query.LdapQueryBuilder;
+import org.springframework.ldap.query.SearchScope;
 import org.springframework.ldap.support.LdapNameBuilder;
-import org.springframework.ldap.support.LdapUtils;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import javax.naming.Name;
-import javax.naming.NameClassPair;
-import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
 import javax.naming.directory.*;
-import javax.naming.ldap.LdapName;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.*;
 
 import static org.springframework.ldap.query.LdapQueryBuilder.query;
 
@@ -43,6 +34,8 @@ public class ApplicationTests {
 
 	@Autowired
 	private LdapTemplate ldapTemplate;
+	@Autowired
+	private org.springframework.boot.autoconfigure.ldap.LdapProperties ldapProperties;
 	/*@Autowired
 	private UserRepo userRepo;
 	@Autowired
@@ -119,14 +112,109 @@ public class ApplicationTests {
 
 	@Test
 	public void find(){
-		ldapTemplate.search(
-				query().where("objectclass").is("person"),
+		/*ldapTemplate.search(
+				query().where("objectclass").is("daUser"),
 				new AttributesMapper<String>() {
 					public String mapFromAttributes(Attributes attrs)
 							throws NamingException {
-						return (String) attrs.get("cn").get();
+						System.out.println(attrs);
+						return (String) attrs.get("pwdHistory").get();
 					}
-				}).stream().forEach(e -> System.out.println(e.toString()));
+				}).stream().forEach(e -> System.out.println(e.toString()));*/
+
+		String baseDN = "cn=Mietch Underwood,ou=Development,ou=IT,ou=Departments";
+		AndFilter andFilter = new AndFilter();
+		andFilter.and(new EqualsFilter("objectclass", "daUser"))
+				.and(new LikeFilter("pwdHistory","20190301070853*"));
+		String[] userAttrList = {"cn", "sn","pwdHistory","pwdChangedTime"};
+		SearchControls searchControls = new SearchControls(
+				SearchControls.SUBTREE_SCOPE, 0, 0, null, false, false);
+		searchControls.setReturningAttributes(userAttrList);
+		List<Object> list = ldapTemplate.search("",
+				andFilter.encode(),
+				searchControls,new ContextMapper<Object>() {
+			@Override
+			public Object mapFromContext(Object ctx) throws NamingException {
+				DirContextAdapter context = (DirContextAdapter)ctx;
+				List<String> memberof = new ArrayList();
+				Enumeration vals = context.getAttributes().get("pwdHistory").getAll();
+				while (vals.hasMoreElements()) {
+					String entry = (String)vals.nextElement();
+					String[] history = entry.split("#");
+					Long time = Long.valueOf(history[0].substring(0,14));
+					System.out.println(time);
+					memberof.add(entry);
+				}
+				return memberof;
+			}
+		});
+		((List<String>)list.get(0)).stream().forEach(e -> System.out.println(e.toString()));
+//		ldapTemplate.search(
+//				query().where("objectclass").is("daUser"),
+//				new ContextMapper<String>() {
+//					@Override
+//					public String mapFromContext(Object ctx) {
+//						DirContextAdapter context = (DirContextAdapter)ctx;
+//						return (String) ((DirContextAdapter) ctx).getStringAttribute("pwdHistory");
+//					}
+//				}).stream().forEach(e -> System.out.println(e.toString()));
+	}
+
+	@Test
+	public void group(){
+		String baseDN = "cn=Mietch Underwood,ou=Development,ou=IT,ou=Departments";
+		AndFilter andFilter = new AndFilter();
+		andFilter.and(new EqualsFilter("objectclass", "groupOfUniqueNames"))
+				.and(new LikeFilter("uniqueMember","cn=System*"));
+		String[] userAttrList = {"cn", "dn","uniqueMember","objectclass"};
+		SearchControls searchControls = new SearchControls(
+				SearchControls.SUBTREE_SCOPE, 0, 0, null, false, false);
+		searchControls.setReturningAttributes(userAttrList);
+		List<Object> list = ldapTemplate.search("",
+				andFilter.encode(),
+				searchControls,new ContextMapper<Object>() {
+					@Override
+					public Object mapFromContext(Object ctx) throws NamingException {
+						DirContextAdapter context = (DirContextAdapter)ctx;
+						List<String> uniqueMembers = new ArrayList();
+						Attribute attr = context.getAttributes().get("uniqueMember");
+
+						for (int i=0;i<attr.size();i++){
+							uniqueMembers.add((String) attr.get(i));
+						}
+						/*Enumeration vals = context.getAttributes().get("uniqueMember").getAll();
+						while (vals.hasMoreElements()) {
+							String entry = (String)vals.nextElement();
+							String[] history = entry.split("#");
+							Long time = Long.valueOf(history[0].substring(0,14));
+							System.out.println(time);
+							uniqueMembers.add(entry);
+						}*/
+						return uniqueMembers;
+					}
+				});
+		System.out.println(list.size());
+		((List<String>)list.get(0)).stream().forEach(e -> System.out.println(e.toString()));
+	}
+
+	@Test
+	public void org(){
+		Assert.assertEquals(ldapProperties.getBase(),"dc=example,dc=com");
+		String orgDn = "ou=IT,ou=Departments,dc=example,dc=com";
+		ldapTemplate.search(query()
+						.base(orgDn.substring(0,orgDn.indexOf(ldapProperties.getBase())-1))
+						.attributes("ou","createTimestamp")
+						.searchScope(SearchScope.ONELEVEL)
+						.where("objectClass").is("organizationalUnit"),
+				new ContextMapper<Object>() {
+					@Override
+					public Object mapFromContext(Object ctx) throws NamingException {
+						DirContextAdapter context = (DirContextAdapter) ctx;
+						String dn = context.getStringAttribute("ou");
+						System.out.println(dn);
+						return null;
+					}
+				});
 	}
 
 

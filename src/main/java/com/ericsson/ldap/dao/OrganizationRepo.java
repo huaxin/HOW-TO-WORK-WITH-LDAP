@@ -2,6 +2,7 @@ package com.ericsson.ldap.dao;
 
 import com.ericsson.ldap.entity.Organization;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.ldap.core.AttributesMapper;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.filter.AndFilter;
@@ -24,6 +25,7 @@ import java.util.stream.Collectors;
 @Component
 public class OrganizationRepo {
     @Autowired
+    @Qualifier("adLdapTemplate")
     private LdapTemplate ldapTemplate;
 
     /**

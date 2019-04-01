@@ -1,7 +1,9 @@
 package com.ericsson.ldap.dao;
 
 import com.ericsson.ldap.entity.User;
+import com.sun.jndi.ldap.ctl.PasswordExpiredResponseControl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.ldap.core.AttributesMapper;
 import org.springframework.ldap.core.ContextMapper;
 import org.springframework.ldap.core.DirContextAdapter;
@@ -18,6 +20,7 @@ import javax.naming.Name;
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
 import javax.naming.directory.*;
+import java.net.PasswordAuthentication;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -26,6 +29,7 @@ import java.util.stream.Collectors;
 @Component
 public class UserRepo {
     @Autowired
+    @Qualifier("adLdapTemplate")
     private LdapTemplate ldapTemplate;
 
     /**
@@ -108,15 +112,16 @@ public class UserRepo {
 
      /**
      * 根据dn查询详细信息
-     * @param cn
+     * @param dn
      * @return
      */
-    public User getUserDetail(String cn) {
+    public User getUserDetail(String dn) {
         //ldapTeplate的lookup方法是根据dn进行查询，此查询的效率较高
         User user = null;
         try {
-            //user = (User)ldapTemplate.lookup(buildDN(cn),new UserAttributesMapper());
-            user = (User)ldapTemplate.lookup(buildDN(cn),new UserContextMapper());
+            //user = (User)ldapTemplate.lookup(buildDN(dn),new UserAttributesMapper());
+            //dn = "cn=Mietch Underwood,ou=Development,ou=IT,ou=Departments";
+            user = (User)ldapTemplate.lookup(buildDN(dn),new UserContextMapper());
         } catch (NameNotFoundException e) {
             e.printStackTrace();
         }
@@ -188,11 +193,12 @@ public class UserRepo {
 
     /**
      * 根据dn删除一条记录
-     * @param cn
+     * @param dn
      */
-    public void remove(String cn) {
+    public void remove(String dn) {
         try {
-            ldapTemplate.unbind(buildDN(cn));
+            //dn = "cn=Mietch Underwood,ou=Development,ou=IT,ou=Departments";
+            ldapTemplate.unbind(buildDN(dn));
         } catch (NameNotFoundException e) {
             e.printStackTrace();
         }
@@ -232,7 +238,7 @@ public class UserRepo {
             }
             //modifyAttributes 方法是修改对象的操作，与rebind（）方法需要区别开
             try {
-                ldapTemplate.modifyAttributes(this.buildDN(user.getCn()), mArray);
+                ldapTemplate.modifyAttributes(this.buildDN(user), mArray);
             } catch (NameNotFoundException e) {
                 e.printStackTrace();
             }
@@ -297,6 +303,7 @@ public class UserRepo {
     }
 
     private static class UserContextMapper implements ContextMapper {
+        @Override
         public Object mapFromContext(Object ctx) {
             DirContextAdapter context = (DirContextAdapter)ctx;
             User user = new User();
